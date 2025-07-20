@@ -28,9 +28,7 @@ jobs:
 
     - name: List vcpkg output dirs
       shell: cmd
-      run: |
-        dir /s /b %GITHUB_WORKSPACE%\vcpkg\installed\x64-windows\include\qrencode.h
-        dir /s /b %GITHUB_WORKSPACE%\vcpkg\installed\x64-windows\lib\qrencode.lib
+      run: dir /s /b %GITHUB_WORKSPACE%\vcpkg\installed
 
     - name: Compile qrpng_wrapper.c into qrpng.dll
       shell: cmd
