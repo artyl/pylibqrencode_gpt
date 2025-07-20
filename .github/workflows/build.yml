@@ -12,9 +12,27 @@ jobs:
     name: Build on Windows
     runs-on: windows-latest
 
-    defaults:
-      run:
-        shell: bash
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up MSVC Developer Command Prompt
+      uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Install vcpkg and build libqrencode
+      shell: cmd
+      run: |
+        git clone https://github.com/microsoft/vcpkg.git
+        .\vcpkg\bootstrap-vcpkg.bat
+        .\vcpkg\vcpkg install libqrencode
+
+    - name: Compile qrpng_wrapper.c into qrpng.dll
+      shell: cmd
+      run: |
+        cl qrpng_wrapper.c /LD ^
+         /I"vcpkg\installed\x64-windows\include" ^
+         /link /OUT:pylibqrencode\qrpng.dll ^
+         vcpkg\installed\x64-windows\lib\qrencode.lib
 
     steps:
     - name: Checkout source
