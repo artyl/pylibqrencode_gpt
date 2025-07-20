@@ -1,0 +1,41 @@
+name: Build pylibqrencode on Windows
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    name: Build DLL and Package
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Install vcpkg and build libqrencode
+      run: |
+        git clone https://github.com/microsoft/vcpkg.git
+        .\vcpkg\bootstrap-vcpkg.bat
+        .\vcpkg\vcpkg install libqrencode
+
+    - name: Compile qrpng_wrapper.c into qrpng.dll
+      run: |
+        cl qrpng_wrapper.c /LD ^
+          /I"vcpkg\installed\x64-windows\include" ^
+          /link /OUT:pylibqrencode\qrpng.dll ^
+          vcpkg\installed\x64-windows\lib\qrencode.lib
+
+    - name: Test Python QR code generation
+      run: |
+        pip install pillow
+        python -c "from pylibqrencode import generate_qr; generate_qr(b'GitHub Actions Test', scale=4).save('test_qr.png')"
+
+    - name: Upload DLL artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: qrpng-dll
+        path: pylibqrencode/qrpng.dll
